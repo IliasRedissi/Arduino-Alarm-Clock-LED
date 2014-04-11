@@ -1,13 +1,23 @@
+
+
+
 // LCD : UART     Switcher : D2   Button : D3/D4   Clock : I2C
-// Speacker : D8
+// Speaker : D8
 
-#include <SoftwareSerial.h>
-#include <SerialLCD.h>
+//#include <SoftwareSerial.h>
+//#include <SerialLCD.h>
 #include <Wire.h>
-#include <LiquidCrystal.h>
-#include "DS1307.h"
+#include <DS1307.h>
+#include <ChainableLED.h>
+#include <Arduino.h>
 
-SerialLCD slcd(0 , 1);
+
+#define NUM_LEDS 5
+
+//SerialLCD slcd(0 , 1);
+ChainableLED leds(7, 8, NUM_LEDS);
+
+
 
 DS1307 clock; //define a object of DS1307 class 
 
@@ -21,8 +31,8 @@ float time;
 
 void setup()
 {
-  slcd.begin();
-  
+  //slcd.begin();
+  Serial.begin(9600);
   clock.begin();
   clock.fillByYMD(2013,1,19); // Jan 19,2013
   clock.fillByHMS(23,59,30); // 15:28:30
@@ -38,70 +48,71 @@ void loop()
 {
   if(time <= 0)
   {
-    slcd.noBacklight();  // Turn on the backlight
+    //slcd.noBacklight();  // Turn on the backlight
   }
   switcher = digitalRead(2);
   button1 = digitalRead(3);
   button2 = digitalRead(4);
   
   clock.getTime();
-  slcd.setCursor(0,0);
+  //slcd.setCursor(0,0);
   
   if(clock.hour < 10)
   {
-    slcd.print("0");
+    //slcd.print("0");
+    Serial.print("0")
   }
-  slcd.print(float(clock.hour),DEC);
+  Serial.print(float(clock.hour),DEC);
   
-  slcd.print(":");
+  Serial.print(":");
   
   if(clock.minute < 10)
   {
-    slcd.print("0");
+    SerialSerial.print("0");
   }
-  slcd.print(float(clock.minute),DEC);
+  Serial.print(float(clock.minute),DEC);
   
-  slcd.print(":");
+  Serial.print(":");
   
   if(clock.second < 10)
   {
-    slcd.print("0");
+    Serial.print("0");
   }
-  slcd.print(float(clock.second),DEC);
+  Serial.print(float(clock.second),DEC);
   
-  slcd.setCursor(0,1);
-  slcd.print("Reveil: ");
+  //Serial.setCursor(0,1);
+  Serial.print("Reveil: ");
   if(h < 10)
   {
-    slcd.print("0");
+    Serial.print("0");
   }
-  slcd.print(float(h), DEC);
-  slcd.print(":");
+  Serial.print(float(h), DEC);
+  Serial.print(":");
   
   if(m < 10)
   {
-    slcd.print("0");
+    Serial.print("0");
   }
-  slcd.print(float(m), DEC);
-  slcd.print(" ");
+  Serial.print(float(m), DEC);
+  Serial.print(" ");
     
-  if(switcher == HIGH)
+  /*if(switcher == HIGH)
   {
-    slcd.setCursor(13,0);
-    slcd.print(" ON");
+    Serial.setCursor(13,0);
+    Serial.print(" ON");
   }
   else
   {
-    slcd.setCursor(13,0);
-    slcd.print("OFF");
-  }
+    Serial.setCursor(13,0);
+    Serial.print("OFF");
+  }*/
   
   if(button1 == HIGH)
   {
     h++;
     delay(125);
     time = 70.0f;
-    slcd.backlight();  // Turn on the backlight
+    //Serial.backlight();  // Turn on the backlight
   }
   
   if(button2 == HIGH)
@@ -109,7 +120,7 @@ void loop()
     m++;
     delay(125);
     time = 70.0f;
-    slcd.backlight();  // Turn on the backlight
+    //Serial.backlight();  // Turn on the backlight
   }
   
   if(h == 24)
@@ -124,4 +135,5 @@ void loop()
   }
   time--;
 }
+
 
