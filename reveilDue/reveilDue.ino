@@ -20,7 +20,9 @@ bool minuteConfigure = false;
 bool secondeConfigure = false;
 SerialLCD slcd;
 ChainableLED leds(7, 8, NUM_LEDS);
-void setup() {
+
+void setup() 
+{
   // put your setup code here, to run once:
   
   Scheduler.startLoop(reveil);
@@ -33,17 +35,32 @@ void setup() {
     leds.setColorHSB(i, 0, 0, 0);
 }
 
-void loop() {
+void loop() 
+{
   if (configurated)
   {
     afficherHeure(4);
     delay(1000);
-
   }
   else
   {
     configuration();
   }
+  if(heure == reveil_heure && minute == reveil_minute && seconde == 0) { reveiller(); }
+}
+
+void backlight()
+{
+  slcd.backlight(true);
+  delay(2000);
+  slcd.backlight(false);
+}
+
+void reveiller()
+{
+  slcd.backlight();
+  for (byte i=0; i<NUM_LEDS; i++)
+    leds.setColorHSB(i, 0, 0, 255);
 }
 
 void horloge() 
@@ -83,7 +100,6 @@ void reveil()
       pression = true;
       reveil_minute++;
       slcd.backlight();
-      
     }
     
     if (reveil_minute >= 60) {reveil_minute =0; reveil_heure++;}
@@ -123,6 +139,7 @@ void afficherHeure(int column)
   }
   else
   {
+    slcd.backlight();
     slcd.setCursor(column,0);
     if(temp_heure < 10)
     {
@@ -142,11 +159,10 @@ void afficherHeure(int column)
     }
     slcd.print(temp_seconde, DEC);
   }
-
-
  }
 
- void afficherReveil(){ 
+ void afficherReveil()
+ { 
   /* Réveil */
   slcd.setCursor(0,1);
   slcd.print("Reveil : ");
@@ -185,6 +201,7 @@ void configuration()
       if(digitalRead(3) == HIGH)
       {
         temp_heure++;
+        backlight();
       }
       if (temp_heure >= 24) {temp_heure = 0;}
       afficherHeure(4);
@@ -200,6 +217,7 @@ void configuration()
       if(digitalRead(3) == HIGH)
       {
         temp_minute++;
+        backlight();
       }
       if (temp_minute >= 60) {temp_minute = 0;}
       afficherHeure(4);
