@@ -205,24 +205,9 @@ void configuration()
       afficherHeure(4);
       delay(200);
     }
-    
-    while(!secondeConfigure)
-    {
-      if(digitalRead(4) == HIGH)
-      {
-        secondeConfigure = true;
-        configurated = true;
-        seconde = temp_seconde;
-        minute = temp_minute;
-        heure = temp_heure;
-      }
-      if(digitalRead(3) == HIGH)
-      {
-        temp_seconde++;
-      }
-      if (temp_seconde >= 60) {temp_seconde = 0;}
-      afficherHeure(4);
-      delay(200);
-    }
-
+    configurated = true;
+    seconde = 0;
+    minute = temp_minute;
+    heure = temp_heure;
+    afficherHeure(4);
 }
