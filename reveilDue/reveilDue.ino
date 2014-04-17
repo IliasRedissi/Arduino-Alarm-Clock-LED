@@ -13,18 +13,25 @@ float temp_seconde = 0;
 float reveil_heure = 0;
 float reveil_minute = 0;
 bool pression = false;
-bool reveilActivated = false;
+bool reveilActivate = false;
 bool configurated = false;
 bool heureConfigure = false;
 bool minuteConfigure = false;
 bool secondeConfigure = false;
+float hue = 0.0;
+boolean maxi = true;
+double blue = 0;
 SerialLCD slcd;
 ChainableLED leds(7, 8, NUM_LEDS);
+int reveilDebut = 0;
+int reveilFin = 0;
 void setup() {
   // put your setup code here, to run once:
   
   Scheduler.startLoop(reveil);
   Scheduler.startLoop(horloge);
+  Scheduler.startLoop(reveilActivated);
+  Serial.begin(9600);
   slcd.begin();
   pinMode(2, INPUT);	//Switcher
   pinMode(3, INPUT);	//Bouton1
@@ -69,7 +76,7 @@ void horloge()
 
 void reveil()
 {
-  if(reveilActivated && configurated){
+  if(reveilActivate && configurated){
     afficherReveil();
     if(digitalRead(3) == HIGH)
     {
@@ -88,12 +95,22 @@ void reveil()
     
     if (reveil_minute >= 60) {reveil_minute =0; reveil_heure++;}
     if (reveil_heure >= 24) {reveil_heure =0;}
+    if (reveil_minute < 30)
+    {
+      reveil_heure-1 == -1 ? reveilDebut = 23*60 + reveil_minute + 30 : reveilDebut = (reveil_heure-1)*60+reveil_minute+30;
+      reveilFin = reveil_heure*60+reveil_minute;
+    }
+    else
+    {
+      reveilDebut = reveil_heure*60+reveil_minute - 30;
+      reveilFin = (reveil_heure + 1)*60+(int((reveil_minute + 30)) % 60);
+    }
   }
   else
   {
     effacer(1);
   }
-  digitalRead(2) == HIGH ? reveilActivated = true : reveilActivated = false;
+  digitalRead(2) == HIGH ? reveilActivate = true : reveilActivate = false;
   delay(225);
 }
 
@@ -196,6 +213,10 @@ void configuration()
       if(digitalRead(4) == HIGH)
       {
         minuteConfigure = true;
+        seconde = 0;
+        minute = temp_minute;
+        heure = temp_heure;
+        configurated = true;
       }
       if(digitalRead(3) == HIGH)
       {
@@ -205,24 +226,43 @@ void configuration()
       afficherHeure(4);
       delay(200);
     }
-    
-    while(!secondeConfigure)
-    {
-      if(digitalRead(4) == HIGH)
-      {
-        secondeConfigure = true;
-        configurated = true;
-        seconde = temp_seconde;
-        minute = temp_minute;
-        heure = temp_heure;
-      }
-      if(digitalRead(3) == HIGH)
-      {
-        temp_seconde++;
-      }
-      if (temp_seconde >= 60) {temp_seconde = 0;}
-      afficherHeure(4);
-      delay(200);
-    }
 
+}
+
+void reveilActivated()
+{
+  Serial.print("Heure actuelle en minutes : ");
+  Serial.println(heureEnMinute());
+  Serial.print("reveilDebut : ");
+  Serial.println(reveilDebut);
+  Serial.print("reveilFin : ");
+  Serial.println(reveilFin);
+  if(configurated && reveilActivate && minute == reveil_minute && heure == reveil_heure)
+  {
+    if(maxi)
+    {
+      for (byte i=0; i<NUM_LEDS; i++)
+          leds.setColorRGB(i, 0, 0 , blue);
+          delay(25);
+    
+          blue += 1;
+            
+          if (blue>=255)
+            maxi = false;
+    }
+  }
+  else
+  { 
+    for (byte i=0; i<NUM_LEDS; i++)
+      leds.setColorHSB(i, 0, 0, 0);
+    maxi = true;
+    blue = 0;
+  }
+  delay(1000);
+  yield();
+}
+
+int heureEnMinute()
+{
+  return heure*60+minute;
 }
