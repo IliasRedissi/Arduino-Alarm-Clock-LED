@@ -25,12 +25,14 @@ SerialLCD slcd;
 ChainableLED leds(7, 8, NUM_LEDS);
 int reveilDebut = 0;
 int reveilFin = 0;
+int temps = 2;
 void setup() {
   // put your setup code here, to run once:
   
   Scheduler.startLoop(reveil);
   Scheduler.startLoop(horloge);
   Scheduler.startLoop(reveilActivated);
+  Scheduler.startLoop(eteindreEcran);
   Serial.begin(9600);
   slcd.begin();
   pinMode(2, INPUT);	//Switcher
@@ -82,6 +84,7 @@ void reveil()
     {
       reveil_heure++;
       pression = true;
+      temps = 2;
       slcd.backlight();
     }
   
@@ -89,6 +92,7 @@ void reveil()
     {
       pression = true;
       reveil_minute++;
+      temps = 2;
       slcd.backlight();
       
     }
@@ -192,6 +196,7 @@ void effacer(int row)
 
 void configuration()
 {
+    slcd.backlight();
     slcd.setCursor(4,0);
     while(!heureConfigure)
     {
@@ -265,4 +270,17 @@ void reveilActivated()
 int heureEnMinute()
 {
   return heure*60+minute;
+}
+
+void eteindreEcran()
+{
+  if(configurated)
+  {
+    if(temps == 0)
+    {
+      slcd.noBacklight();
+    }
+    temps -= 1;
+  }
+  delay(1000);
 }
